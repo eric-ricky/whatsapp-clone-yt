@@ -8,21 +8,26 @@ import { auth, db } from "../firebase";
 import getRecipientEmail from "../utils/getRecipientEmail";
 
 const Chat = ({ id, users }) => {
+  //   const enterChat = () => {
+  //     console.log("routing..");
+  //     router.push(`/chat/${id}`);
+  //     console.log("routed successfully.");
+  //   };
   const router = useRouter();
   const [user] = useAuthState(auth);
   const recipientEmail = getRecipientEmail(users, user);
 
-  const [recipientSnapshot] = useCollection(
-    query(collection(db, "users"), where("email", "==", recipientEmail))
+  const recipientRef = query(
+    collection(db, "users"),
+    where("email", "==", recipientEmail)
   );
+  const [recipientSnapshot] = useCollection(recipientRef);
 
   const recipient = recipientSnapshot?.docs?.[0]?.data();
-  // console.log(recipient?.photoURL);
 
   const enterChat = () => {
-    console.log("routing..");
+    console.log("first");
     router.push(`/chat/${id}`);
-    console.log("routed successfully.");
   };
 
   return (

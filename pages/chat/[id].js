@@ -14,10 +14,10 @@ import styled from "styled-components";
 import ChatScreen from "../../components/ChatScreen";
 import Sidebar from "../../components/Sidebar";
 import getRecipientEmail from "../../utils/getRecipientEmail";
+import { useRouter } from "next/router";
 
-const ChatPage = ({ messages, chat }) => {
+const ChatPage = ({ chat, messages }) => {
   const [user] = useAuthState(auth);
-
   return (
     <Container>
       <Head>
@@ -26,7 +26,8 @@ const ChatPage = ({ messages, chat }) => {
 
       <Sidebar />
       <ChatContainer>
-        <ChatScreen messages={messages} chat={chat} />
+        {/* <ChatScreen messages={messages} chat={chat} /> */}
+        <ChatScreen chat={chat} messages={messages} />
       </ChatContainer>
     </Container>
   );
@@ -35,6 +36,7 @@ const ChatPage = ({ messages, chat }) => {
 export default ChatPage;
 
 export async function getServerSideProps(context) {
+  console.log("geting server side...");
   const id = context.query.id;
   const chatRef = doc(db, "chats", id);
 
@@ -42,12 +44,13 @@ export async function getServerSideProps(context) {
   const q = query(collection(chatRef, "messages"), orderBy("timestamp", "asc"));
   const docSnap = await getDocs(q);
 
-  docSnap?.docs.forEach((doc) => console.log(doc.data()));
   const messages = docSnap?.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
     timestamp: doc.data().timestamp.toDate().getTime(),
   }));
+
+  console.log(messages);
 
   // Prepare chats...
   const chatSnap = await getDoc(chatRef);
@@ -58,7 +61,7 @@ export async function getServerSideProps(context) {
 
   return {
     props: {
-      messages: JSON.stringify(messages),
+      messages,
       chat,
     },
   };

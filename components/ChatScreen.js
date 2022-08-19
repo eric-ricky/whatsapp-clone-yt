@@ -1,5 +1,5 @@
 import { Avatar, IconButton } from "@material-ui/core";
-import { AttachFile, Mic, MoreVert, InsertEmoticon } from "@material-ui/icons";
+// import { AttachFile, Mic, MoreVert, InsertEmoticon } from "@material-ui/icons";
 import {
   addDoc,
   collection,
@@ -9,9 +9,10 @@ import {
   serverTimestamp,
   setDoc,
   where,
+  getDocs,
 } from "firebase/firestore";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import styled from "styled-components";
@@ -25,19 +26,19 @@ const ChatScreen = ({ chat, messages }) => {
   const [input, setInput] = useState("");
   const [user] = useAuthState(auth);
   const router = useRouter();
-
   const endOfMessageRef = useRef();
 
-  const chatRef = doc(db, "chats", router.query.id);
+  const recipientEmail = getRecipientEmail(chat.users, user);
+
+  console.log(messages);
+
+  const chatRef = doc(db, "chats", chat.id);
   const [messagesSnapshot] = useCollection(
     query(collection(chatRef, "messages"), orderBy("timestamp", "asc"))
   );
 
   const [recipientSnapshot] = useCollection(
-    query(
-      collection(db, "users"),
-      where("email", "==", getRecipientEmail(chat.users, user))
-    )
+    query(collection(db, "users"), where("email", "==", recipientEmail))
   );
 
   const showMessages = () => {
@@ -71,7 +72,7 @@ const ChatScreen = ({ chat, messages }) => {
     } else {
       console.log("from server..");
 
-      return JSON.parse(messages).map((message) => (
+      return messages?.map((message) => (
         <Message key={message.id} user={message.user} message={message} />
       ));
     }
@@ -87,6 +88,10 @@ const ChatScreen = ({ chat, messages }) => {
   const sendMessage = async (e) => {
     e.preventDefault();
 
+    if (!input) {
+      console.log("please fill in the field!!!");
+      return;
+    }
     console.log("sending...");
 
     // updating last seen
@@ -99,7 +104,7 @@ const ChatScreen = ({ chat, messages }) => {
     );
 
     // add message
-    const colRef = collection(doc(db, "chats", router.query.id), "messages");
+    const colRef = collection(doc(db, "chats", chat.id), "messages");
     await addDoc(colRef, {
       timestamp: serverTimestamp(),
       message: input,
@@ -113,7 +118,7 @@ const ChatScreen = ({ chat, messages }) => {
   };
 
   const recipient = recipientSnapshot?.docs?.[0]?.data();
-  const recipientEmail = getRecipientEmail(chat.users, user);
+
   return (
     <Container>
       <Header>
@@ -136,27 +141,21 @@ const ChatScreen = ({ chat, messages }) => {
         </HeaderInformation>
 
         <HeaderIcons>
-          <IconButton>
-            <AttachFile />
-          </IconButton>
-          <IconButton>
-            <MoreVert />
-          </IconButton>
+          <IconButton>{/* <AttachFile /> */}2</IconButton>
+          <IconButton>{/* <MoreVert /> */}1</IconButton>
         </HeaderIcons>
       </Header>
 
       <MessageContainer>
-        {/* {messages} */}
         {showMessages()}
         <EndOfMessage ref={endOfMessageRef} />
       </MessageContainer>
 
       <InputContainer onSubmit={sendMessage}>
-        <InsertEmoticon />
+        {/* <InsertEmoticon /> */}🖊
         <Input value={input} onChange={(e) => setInput(e.target.value)} />
         <button type="submit" hidden />
-
-        <Mic />
+        {/* <Mic /> */}🎤
       </InputContainer>
     </Container>
   );

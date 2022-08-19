@@ -3,12 +3,17 @@ import { signInWithPopup } from "firebase/auth";
 import Head from "next/head";
 import styled from "styled-components";
 import { auth, provider } from "../firebase";
+import { useRouter } from "next/router";
 
 const Login = () => {
+  const router = useRouter();
+  
   const signIn = async () => {
     try {
       console.log("loging....");
       const result = await signInWithPopup(auth, provider);
+      router.push(`/`);
+
       console.log(result);
       console.log("Logged in successfully");
     } catch (error) {
@@ -39,13 +44,6 @@ const Login = () => {
 
 export default Login;
 
-const Container = styled.div`
-  display: grid;
-  place-items: center;
-  height: 100vh;
-  background: whitesmoke;
-`;
-
 const LoginContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -54,4 +52,11 @@ const LoginContainer = styled.div`
   > button {
     color: #fff;
   }
+`;
+
+const Container = styled.div`
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  background: whitesmoke;
 `;
